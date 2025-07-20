@@ -20,10 +20,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "insecure-dev-key")
 DEBUG = ENVIRONMENT == "development"
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://resortsathi.com",
-    "https://www.resortsathi.com",
-]
+CSRF_TRUSTED_ORIGINS = ["*"]
 
 # === Installed Applications ===
 INSTALLED_APPS = [
