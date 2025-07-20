@@ -1,0 +1,812 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title">Issued Tickets</h4>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#typeSelectModal"
+            >
+              + Issue Ticket
+            </button>
+          </div>
+
+          {% if messages %} {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %} {% endif %}
+
+          <!-- Tabs -->
+          <ul class="nav nav-tabs" id="ticketTabs" role="tablist">
+            <li class="nav-item">
+              <button
+                class="nav-link active"
+                id="walkin-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#walkin"
+                type="button"
+                role="tab"
+              >
+                Walk-in
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                id="corporate-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#corporate"
+                type="button"
+                role="tab"
+              >
+                Corporate
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                id="organization-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#organization"
+                type="button"
+                role="tab"
+              >
+                Organization
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content pt-3">
+            <!-- Walk-in Tickets -->
+            <div
+              class="tab-pane fade show active"
+              id="walkin"
+              role="tabpanel"
+              aria-labelledby="walkin-tab"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <h5>Walk-in Tickets</h5>
+                <button
+                  class="btn btn-outline-success btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#walkinTicketModal"
+                >
+                  + New Walk-in Ticket
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Template</th>
+                      <th>Qty</th>
+                      <th>Counter</th>
+                      <th>Payment</th>
+                      <th>Issued At</th>
+                      <th width="80">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ticket in walkin_tickets %}
+                    <tr>
+                      <td>{{ ticket.ticket_id }}</td>
+                      <td>{{ ticket.template.name }}</td>
+                      <td>{{ ticket.quantity }}</td>
+                      <td>{{ ticket.counter.name }}</td>
+                      <td>{{ ticket.get_payment_mode_display }}</td>
+                      <td>{{ ticket.issued_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                          >
+                            <i class="typcn typcn-th-list"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                              <button
+                                class="dropdown-item text-danger delete-ticket-btn"
+                                data-id="{{ ticket.pk }}"
+                                data-type="walkin"
+                                data-name="{{ ticket.ticket_id }}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                              >
+                                <i class="typcn typcn-trash"></i> Delete
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="openPrintModal('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-printer"></i> Print
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="downloadPDF('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-download"></i> Download
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="7" class="text-center">
+                        No walk-in tickets found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Corporate Tickets -->
+            <div
+              class="tab-pane fade"
+              id="corporate"
+              role="tabpanel"
+              aria-labelledby="corporate-tab"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <h5>Corporate Tickets</h5>
+                <button
+                  class="btn btn-outline-primary btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#corporateTicketModal"
+                >
+                  + New Corporate Ticket
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Customer</th>
+                      <th>Template</th>
+                      <th>Qty</th>
+                      <th>Counter</th>
+                      <th>Payment</th>
+                      <th>Issued At</th>
+                      <th width="80">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ticket in corporate_tickets %}
+                    <tr>
+                      <td>{{ ticket.ticket_id }}</td>
+                      <td>{{ ticket.customer.company_name }}</td>
+                      <td>{{ ticket.template.name }}</td>
+                      <td>{{ ticket.quantity }}</td>
+                      <td>{{ ticket.counter.name }}</td>
+                      <td>{{ ticket.get_payment_mode_display }}</td>
+                      <td>{{ ticket.issued_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                          >
+                            <i class="typcn typcn-th-list"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                              <button
+                                class="dropdown-item text-danger delete-ticket-btn"
+                                data-id="{{ ticket.pk }}"
+                                data-type="corporate"
+                                data-name="{{ ticket.customer.company_name }}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                              >
+                                <i class="typcn typcn-trash"></i> Delete
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="openPrintModal('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-printer"></i> Print
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="downloadPDF('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-download"></i> Download
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="8" class="text-center">
+                        No corporate tickets found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Organization Tickets -->
+            <div
+              class="tab-pane fade"
+              id="organization"
+              role="tabpanel"
+              aria-labelledby="organization-tab"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <h5>Organization Tickets</h5>
+                <button
+                  class="btn btn-outline-warning btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#organizationTicketModal"
+                >
+                  + New Organization Ticket
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Customer</th>
+                      <th>Template</th>
+                      <th>Qty</th>
+                      <th>Counter</th>
+                      <th>Payment</th>
+                      <th>Issued At</th>
+                      <th width="80">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ticket in organization_tickets %}
+                    <tr>
+                      <td>{{ ticket.ticket_id }}</td>
+                      <td>{{ ticket.customer.organization_name }}</td>
+                      <td>{{ ticket.template.name }}</td>
+                      <td>{{ ticket.quantity }}</td>
+                      <td>{{ ticket.counter.name }}</td>
+                      <td>{{ ticket.get_payment_mode_display }}</td>
+                      <td>{{ ticket.issued_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                          >
+                            <i class="typcn typcn-th-list"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                              <button
+                                class="dropdown-item text-danger delete-ticket-btn"
+                                data-id="{{ ticket.pk }}"
+                                data-type="organization"
+                                data-name="{{ ticket.customer.organization_name }}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                              >
+                                <i class="typcn typcn-trash"></i> Delete
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="openPrintModal('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-printer"></i> Print
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="openPrintModal('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-printer"></i> Print
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                class="dropdown-item"
+                                onclick="downloadPDF('{{ ticket.pk }}'); return false;"
+                              >
+                                <i class="typcn typcn-download"></i> Download
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="8" class="text-center">
+                        No organization tickets found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Select Ticket Type Modal -->
+<div class="modal fade" id="typeSelectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Ticket Type</h5>
+      </div>
+      <div class="modal-body text-center">
+        <button
+          class="btn btn-outline-success m-2"
+          data-bs-toggle="modal"
+          data-bs-target="#walkinTicketModal"
+          data-bs-dismiss="modal"
+        >
+          Walk-in
+        </button>
+        <button
+          class="btn btn-outline-primary m-2"
+          data-bs-toggle="modal"
+          data-bs-target="#corporateTicketModal"
+          data-bs-dismiss="modal"
+        >
+          Corporate
+        </button>
+        <button
+          class="btn btn-outline-warning m-2"
+          data-bs-toggle="modal"
+          data-bs-target="#organizationTicketModal"
+          data-bs-dismiss="modal"
+        >
+          Organization
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Walk-in Ticket Modal -->
+<div class="modal fade" id="walkinTicketModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'tickets:issue-ticket' %}">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_type" value="walkin" />
+        <div class="modal-header">
+          <h5 class="modal-title">Issue Walk-in Ticket</h5>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="walkin-counter" class="form-label">Counter</label>
+            <select
+              id="walkin-counter"
+              name="counter"
+              class="form-select"
+              required
+            >
+              <option value="">Select Counter</option>
+              {% for counter in ticket_counters %}
+              <option value="{{ counter.id }}">{{ counter.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="walkin-template" class="form-label"
+              >Ticket Template</label
+            >
+            <select
+              id="walkin-template"
+              name="template"
+              class="form-select"
+              required
+            >
+              <option value="">Select Template</option>
+              {% for template in ticket_templates %}
+              <option value="{{ template.id }}">
+                {{ template.name }} - Rs. {{ template.price }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="walkin-quantity" class="form-label">Quantity</label>
+            <input
+              type="number"
+              id="walkin-quantity"
+              name="quantity"
+              min="1"
+              value="1"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="walkin-payment" class="form-label">Payment Mode</label>
+            <select
+              id="walkin-payment"
+              name="payment_mode"
+              class="form-select"
+              required
+            >
+              <option value="">Select Mode</option>
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-success">Issue Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Corporate Ticket Modal -->
+<div
+  class="modal fade"
+  id="corporateTicketModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'tickets:issue-ticket' %}">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_type" value="corporate" />
+        <div class="modal-header">
+          <h5 class="modal-title">Issue Corporate Ticket</h5>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="corporate-customer" class="form-label"
+              >Corporate Customer</label
+            >
+            <select
+              id="corporate-customer"
+              name="customer_id"
+              class="form-select"
+              required
+            >
+              <option value="">Select Customer</option>
+              {% for cust in corporate_customers %}
+              <option value="{{ cust.id }}">{{ cust.company_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="corporate-counter" class="form-label">Counter</label>
+            <select
+              id="corporate-counter"
+              name="counter"
+              class="form-select"
+              required
+            >
+              <option value="">Select Counter</option>
+              {% for counter in ticket_counters %}
+              <option value="{{ counter.id }}">{{ counter.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="corporate-template" class="form-label"
+              >Ticket Template</label
+            >
+            <select
+              id="corporate-template"
+              name="template"
+              class="form-select"
+              required
+            >
+              <option value="">Select Template</option>
+              {% for template in ticket_templates %}
+              <option value="{{ template.id }}">
+                {{ template.name }} - Rs. {{ template.price }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="corporate-quantity" class="form-label">Quantity</label>
+            <input
+              type="number"
+              id="corporate-quantity"
+              name="quantity"
+              min="1"
+              value="1"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="corporate-payment" class="form-label"
+              >Payment Mode</label
+            >
+            <select
+              id="corporate-payment"
+              name="payment_mode"
+              class="form-select"
+              required
+            >
+              <option value="">Select Mode</option>
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+              <option value="credit">Credit</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-success">Issue Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Organization Ticket Modal -->
+<div
+  class="modal fade"
+  id="organizationTicketModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'tickets:issue-ticket' %}">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_type" value="organization" />
+        <div class="modal-header">
+          <h5 class="modal-title">Issue Organization Ticket</h5>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="organization-customer" class="form-label"
+              >Organization Customer</label
+            >
+            <select
+              id="organization-customer"
+              name="customer_id"
+              class="form-select"
+              required
+            >
+              <option value="">Select Customer</option>
+              {% for cust in organization_customers %}
+              <option value="{{ cust.id }}">
+                {{ cust.organization_name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="organization-counter" class="form-label">Counter</label>
+            <select
+              id="organization-counter"
+              name="counter"
+              class="form-select"
+              required
+            >
+              <option value="">Select Counter</option>
+              {% for counter in ticket_counters %}
+              <option value="{{ counter.id }}">{{ counter.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="organization-template" class="form-label"
+              >Ticket Template</label
+            >
+            <select
+              id="organization-template"
+              name="template"
+              class="form-select"
+              required
+            >
+              <option value="">Select Template</option>
+              {% for template in ticket_templates %}
+              <option value="{{ template.id }}">
+                {{ template.name }} - Rs. {{ template.price }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="organization-quantity" class="form-label"
+              >Quantity</label
+            >
+            <input
+              type="number"
+              id="organization-quantity"
+              name="quantity"
+              min="1"
+              value="1"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="organization-payment" class="form-label"
+              >Payment Mode</label
+            >
+            <select
+              id="organization-payment"
+              name="payment_mode"
+              class="form-select"
+              required
+            >
+              <option value="">Select Mode</option>
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+              <option value="credit">Credit</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-success">Issue Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" id="deleteForm" action="">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-danger">Delete Ticket</h5>
+        </div>
+        <div class="modal-body">
+          <p>
+            Are you sure you want to delete
+            <strong id="ticketToDeleteName"></strong>?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-danger" type="submit">Yes, Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openPrintModal(ticketId) {
+    fetch(`print/${ticketId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.pdf_url) {
+          const printWindow = window.open(data.pdf_url, "_blank");
+          printWindow.focus();
+        } else {
+          alert("PDF not found or failed to generate.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching ticket:", error);
+        alert("Something went wrong!");
+      });
+  }
+
+  function downloadPDF(ticketId) {
+    fetch(`print/${ticketId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.pdf_url) {
+          const link = document.createElement("a");
+          link.href = data.pdf_url;
+          link.download = `ticket_${ticketId}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          alert("PDF not found or failed to generate.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error downloading ticket:", error);
+        alert("Something went wrong!");
+      });
+  }
+
+  // Main script that runs when page loads
+  document.addEventListener("DOMContentLoaded", () => {
+    // Tab persistence functionality
+    const activeTab = localStorage.getItem("activeTicketTab");
+    if (activeTab) {
+      const tabTrigger = document.querySelector(`#${activeTab}-tab`);
+      if (tabTrigger) {
+        const tab = new bootstrap.Tab(tabTrigger);
+        tab.show();
+      }
+    }
+
+    // Save active tab to localStorage when changed
+    document
+      .querySelectorAll('#ticketTabs button[data-bs-toggle="tab"]')
+      .forEach((tabBtn) => {
+        tabBtn.addEventListener("shown.bs.tab", function (e) {
+          localStorage.setItem(
+            "activeTicketTab",
+            e.target.id.replace("-tab", "")
+          );
+        });
+      });
+
+    // Setup delete modal functionality
+    document.querySelectorAll(".delete-ticket-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        document.getElementById("ticketToDeleteName").innerText = name;
+        document.getElementById("deleteForm").action = `/tickets/delete/${id}/`;
+      });
+    });
+  });
+</script>
+{% endblock %}

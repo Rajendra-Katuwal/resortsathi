@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between mb-3">
+        <h4 class="card-title">Ticket Counters</h4>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#counterModal">+ Add Counter</button>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Location</th>
+              <th width="100">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for counter in counters %}
+              <tr>
+                <td>{{ counter.name }}</td>
+                <td>{{ counter.location }}</td>
+                <td>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown"><i class="typcn typcn-th-list"></i></button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <button
+                          class="dropdown-item edit-counter-btn"
+                          data-id="{{ counter.id }}"
+                          data-name="{{ counter.name }}"
+                          data-location="{{ counter.location }}"
+                          data-bs-toggle="modal"
+                          data-bs-target="#counterModal"
+                        >
+                          Edit
+                        </button>
+                      </li>
+                      <li>
+                        <a href="{% url 'tickets:counter-delete' counter.id %}" class="dropdown-item text-danger">Delete</a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="text-center">No counters found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="counterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{% url 'tickets:counter-create' %}" id="counterForm">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Counter</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="counter-id" name="id">
+          <div class="mb-3">
+            <label for="counter-name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="counter-name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="counter-location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="counter-location" name="location">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Counter</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.edit-counter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = document.querySelector('#counterForm');
+      form.action = `/tickets/counters/edit/${btn.dataset.id}/`;
+      document.querySelector('#counter-id').value = btn.dataset.id;
+      document.querySelector('#counter-name').value = btn.dataset.name;
+      document.querySelector('#counter-location').value = btn.dataset.location;
+      document.querySelector('.modal-title').innerText = 'Edit Counter';
+    });
+  });
+
+  document.getElementById('counterModal').addEventListener('hidden.bs.modal', () => {
+    const form = document.querySelector('#counterForm');
+    form.reset();
+    form.action = "{% url 'tickets:counter-create' %}";
+    document.querySelector('.modal-title').innerText = 'Add Counter';
+  });
+</script>
+{% endblock %}

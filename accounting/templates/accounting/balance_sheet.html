@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    font-size: 12pt;
+    color: #000;
+  }
+
+  .no-print,
+  .navbar,
+  .sidebar,
+  footer,
+  .btn,
+  .card-header,
+  .page-title {
+    display: none !important;
+  }
+
+  .card,
+  .content-wrapper,
+  .container,
+  .row {
+    all: unset;
+    width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+  }
+
+  h2, h3 {
+    margin: 0;
+    padding: 5px 0;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 20mm;
+  }
+}
+</style>
+
+<div class="main-panel">
+        <div class="content-wrapper">
+            <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+            <div class="text-left no-print mt-3">
+        <button onclick="printDiv('printableArea')" class="btn btn-primary">🖨️ Print Balance Sheet</button>
+    </div>
+<div class="container mt-4" id="printableArea">
+    <div class="text-center">
+        <h2 class="text-capitalize">{{ resort.name }}</h2>
+        <p>{{ resort.address }}</p>
+        <h3 class="mt-3">Balance Sheet</h3>
+        <p>As on {{ date }}</p>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5><strong>Liabilities & Capital</strong></h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Particulars</th>
+                        <th class="text-end">Amount (Rs.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for acc, amount in liabilities %}
+                        <tr>
+                            <td>{{ acc.name }}</td>
+                            <td class="text-end">{{ amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for acc, amount in equity %}
+                        <tr>
+                            <td>{{ acc.name }}</td>
+                            <td class="text-end">{{ amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h5><strong>Assets</strong></h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Particulars</th>
+                        <th class="text-end">Amount (Rs.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for acc, amount in assets %}
+                        <tr>
+                            <td>{{ acc.name }}</td>
+                            <td class="text-end">{{ amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    function printDiv(divId) {
+        const printContents = document.getElementById(divId).innerHTML;
+        const original = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = original;
+    }
+</script>
+
+{% endblock %}

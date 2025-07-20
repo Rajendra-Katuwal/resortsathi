@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+</style>
+
+<div class="main-panel">
+        <div class="content-wrapper">
+            <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+                <div class="text-left no-print">    
+        <button class="btn btn-primary " onclick="printDiv('printableArea')">🖨️ Print Income Statement</button>
+    </div>
+<div class="container mt-4" id="printableArea">
+    <div class="text-center">
+        <h2 class="text-capitalize">{{ resort.name }}</h2>
+        <p>{{ resort.address }}</p>
+        <h3>Income Statement</h3>
+        <p>From {{ start_date }} to {{ end_date }}</p>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5><strong>Income</strong></h5>
+            <table class="table table-bordered">
+                {% for acc, amount in income_data %}
+                    <tr><td>{{ acc.name }}</td><td class="text-end">{{ amount|floatformat:2 }}</td></tr>
+                {% endfor %}
+                <tr><th>Total Income</th><th class="text-end">{{ total_income|floatformat:2 }}</th></tr>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h5><strong>Expenses</strong></h5>
+            <table class="table table-bordered">
+                {% for acc, amount in expense_data %}
+                    <tr><td>{{ acc.name }}</td><td class="text-end">{{ amount|floatformat:2 }}</td></tr>
+                {% endfor %}
+                <tr><th>Total Expenses</th><th class="text-end">{{ total_expense|floatformat:2 }}</th></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <h4 class="mt-4">Net Profit: Rs. {{ net_profit|floatformat:2 }}</h4>
+        
+    </div>
+</div>
+        </div>
+      </div>
+            </div>
+        </div>
+</div>
+<script>
+    function printDiv(divId) {
+        const printContents = document.getElementById(divId).innerHTML;
+        const original = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = original;
+    }
+</script>
+{% endblock %}

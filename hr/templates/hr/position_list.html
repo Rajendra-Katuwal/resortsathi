@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title">Position Management</h4>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+              + Add Position
+            </button>
+          </div>
+
+          <form method="GET" class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="text" name="search" class="form-control" placeholder="Search by title or department" value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary">Filter</button>
+              <a href="{% url 'position_list' %}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+          </form>
+
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Department</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for position in positions %}
+                <tr>
+                  <td>{{ position.title }}</td>
+                  <td>{{ position.department.name }}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-warning edit-btn"
+                      data-bs-toggle="modal" data-bs-target="#addModal"
+                      data-id="{{ position.id }}"
+                      data-title="{{ position.title }}"
+                      data-department="{{ position.department.id }}">
+                      Edit
+                    </button>
+                    <form method="POST" action="{% url 'delete_position' position.id %}" style="display:inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center">No positions found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="form-id">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Add Position</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" name="title" id="form-title" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Department</label>
+            <select name="department" id="form-department" class="form-control">
+              {% for dept in departments %}
+              <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.resort.name }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-btn').forEach(button => {
+  button.addEventListener('click', function () {
+    document.getElementById('form-id').value = this.dataset.id;
+    document.getElementById('form-title').value = this.dataset.title;
+    document.getElementById('form-department').value = this.dataset.department;
+    document.getElementById('addModalLabel').innerText = 'Edit Position';
+  });
+});
+
+document.querySelector('[data-bs-target="#addModal"]').addEventListener('click', function () {
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-title').value = '';
+  document.getElementById('form-department').selectedIndex = 0;
+  document.getElementById('addModalLabel').innerText = 'Add Position';
+});
+</script>
+{% endblock %}

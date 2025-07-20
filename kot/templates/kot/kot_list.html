@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <h4>All KOTs</h4>
+    <div class="col-md-12">
+      <a href="{% url 'create_kot' %}" class="btn btn-primary mb-3">Create New KOT</a>
+  </div>
+  </div>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Booking</th>
+        <th>Items</th>
+        <th>Status</th>
+        <th>Created At</th>
+        
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for kot in kots %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>
+        {% if kot.booking %}
+            Booking #{{ kot.booking.room.name }}
+        {% else %}
+            Walk-in
+        {% endif %}
+        </td>
+        <td>
+          <ul>
+            {% for item in kot.items.all %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </td>
+        <td>{{ kot.get_status_display }}</td>
+        <td>{{ kot.created_at }}</td>
+        
+        <td>
+          <a href="" class="btn btn-info btn-sm">View</a>
+          <a href="" class="btn btn-warning btn-sm">Edit</a>
+          <form method="POST" action="" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

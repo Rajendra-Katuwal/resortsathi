@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+/* Make sure the datepicker appears above the modal */
+.ndp-container {
+    z-index: 9999 !important;
+}
+</style>
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title">Attendance Management</h4>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+              + Add Attendance
+            </button>
+          </div>
+
+          <form method="GET" class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="text" name="search" class="form-control" placeholder="Search employee..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary">Filter</button>
+              <a href="{% url 'attendance_list' %}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+          </form>
+
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Date</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Remarks</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in attendances %}
+                <tr>
+                  <td>{{ row.employee.name }}</td>
+                  <td>{{ row.date }}</td>
+                  <td>{{ row.check_in|default:"-" }}</td>
+                  <td>{{ row.check_out|default:"-" }}</td>
+                  <td>{{ row.remarks|default:"-" }}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-warning edit-btn" data-bs-toggle="modal"
+                            data-bs-target="#addModal"
+                            data-id="{{ row.id }}"
+                            data-employee="{{ row.employee.id }}"
+                            data-date="{{ row.date }}"
+                            data-checkin="{{ row.check_in }}"
+                            data-checkout="{{ row.check_out }}"
+                            data-remarks="{{ row.remarks }}">
+                      Edit
+                    </button>
+                    <form method="POST" action="{% url 'delete_attendance' row.id %}" style="display:inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No attendance records found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="form-id">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Add Attendance</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Employee</label>
+            <select name="employee" id="form-employee" class="form-control">
+              {% for emp in employees %}
+              <option value="{{ emp.id }}">{{ emp.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="text" class="form-control nepali-datepicker" name="date" id="form-date" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Check In</label>
+            <input type="time" class="form-control" name="check_in" id="form-checkin">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Check Out</label>
+            <input type="time" class="form-control" name="check_out" id="form-checkout">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Remarks</label>
+            <textarea class="form-control" name="remarks" id="form-remarks"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-btn').forEach(button => {
+  button.addEventListener('click', function () {
+    document.getElementById('form-id').value = this.dataset.id;
+    document.getElementById('form-employee').value = this.dataset.employee;
+    document.getElementById('form-date').value = this.dataset.date;
+    document.getElementById('form-checkin').value = this.dataset.checkin || '';
+    document.getElementById('form-checkout').value = this.dataset.checkout || '';
+    document.getElementById('form-remarks').value = this.dataset.remarks;
+    document.getElementById('addModalLabel').innerText = 'Edit Attendance';
+  });
+});
+
+document.querySelector('[data-bs-target="#addModal"]').addEventListener('click', function () {
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-employee').selectedIndex = 0;
+  document.getElementById('form-date').value = '';
+  document.getElementById('form-checkin').value = '';
+  document.getElementById('form-checkout').value = '';
+  document.getElementById('form-remarks').value = '';
+  document.getElementById('addModalLabel').innerText = 'Add Attendance';
+});
+</script>
+{% endblock %}

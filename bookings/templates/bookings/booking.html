@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+/* Make sure the datepicker appears above the modal */
+.ndp-container {
+    z-index: 9999 !important;
+}
+</style>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title">{{ page_title }}</h4>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal" id="addBookingBtn">
+              + Add {{ page_title }}
+            </button>
+          </div>
+
+          <form method="GET" class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="text" name="search" class="form-control" placeholder="Search by room..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" name="start_date" id="start-date" class="form-control nepali-datepicker" placeholder="Start Date">
+            </div>
+            <div class="col-md-3">
+              <input type="text" name="end_date" id="end-date" class="form-control nepali-datepicker" placeholder="End Date">
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary">Filter</button>
+              <a href="{% url 'booking' %}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+          </form>
+
+          <div class="mb-3 d-flex justify-content-end">
+            <a href="?export=csv" class="btn btn-outline-success btn-sm me-2">Export CSV</a>
+            <a href="?export=excel" class="btn btn-outline-info btn-sm me-2">Export Excel</a>
+            <a href="?export=pdf" class="btn btn-outline-danger btn-sm">Export PDF</a>
+          </div>
+
+          <div class="table-responsive">
+            <table id="myTable" class="table table-striped">
+              <thead>
+                <tr>
+                  {% for header in table_headers %}<th>{{ header }}</th>{% endfor %}
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in table_rows %}
+                <tr>
+                  {% for col in row %}<td>{{ col }}</td>{% endfor %}
+                  <td>
+                    <button type="button" class="btn btn-sm btn-warning edit-btn" data-bs-toggle="modal" data-bs-target="#addModal"
+                            data-id="{{ row.6 }}" data-room="{{ row.7 }}" data-resort="{{ row.8 }}"
+                            data-checkin="{{ row.1 }}" data-checkout="{{ row.2 }}"
+                            data-price="{{ row.3 }}" data-status="{{ row.4 }}">
+                      Edit
+                    </button>
+                    <form method="POST" action="" style="display:inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center">No data found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="form-id">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Add {{ page_title }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Room</label>
+            <select name="room" id="form-room" class="form-select">
+              {% for r in form_fields.0.choices %}
+                <option value="{{ r.id }}" data-price="{{ r.price_per_night }}">{{ r.name }}</option>
+              {% endfor %}
+            </select>
+
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Resort</label>
+            <select name="resort" id="form-resort" class="form-select">
+              {% for r in form_fields.1.choices %}
+              <option value="{{ r.id }}">{{ r.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Check In</label>
+            <input type="text" name="check-in" id="form-checkin" class="form-control nepali-datepicker" placeholder="Select Date">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Check Out</label>
+            <input type="text" name="check-out" id="form-checkout" class="form-control nepali-datepicker" placeholder="Select Date">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Total Price</label>
+            <input type="text" name="total-price" id="form-price" class="form-control" placeholder="Enter Price">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" id="form-status" class="form-select">
+              {% for value, label in form_fields.5.choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-btn').forEach(button => {
+  button.addEventListener('click', function () {
+    document.getElementById('form-id').value = this.dataset.id;
+    document.getElementById('form-room').value = this.dataset.room;
+    document.getElementById('form-resort').value = this.dataset.resort;
+    document.getElementById('form-checkin').value = this.dataset.checkin;
+    document.getElementById('form-checkout').value = this.dataset.checkout;
+    document.getElementById('form-price').value = this.dataset.price;
+    document.getElementById('form-status').value = this.dataset.status;
+    document.getElementById('addModalLabel').innerText = 'Edit {{ page_title }}';
+  });
+});
+
+// Reset modal fields when adding new
+const addBtn = document.getElementById('addBookingBtn');
+addBtn.addEventListener('click', function () {
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-room').selectedIndex = 0;
+  document.getElementById('form-resort').selectedIndex = 0;
+  document.getElementById('form-checkin').value = '';
+  document.getElementById('form-checkout').value = '';
+  document.getElementById('form-price').value = '';
+  document.getElementById('form-status').selectedIndex = 0;
+  document.getElementById('addModalLabel').innerText = 'Add {{ page_title }}';
+});
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const roomSelect = document.getElementById('form-room');
+    const priceInput = document.getElementById('form-price');
+
+    roomSelect.addEventListener('change', function () {
+      const selectedOption = this.options[this.selectedIndex];
+      const price = selectedOption.getAttribute('data-price');
+      priceInput.value = price || '';
+    });
+  });
+</script>
+
+<script>
+  function initNepaliDatePicker() {
+    const checkinInput = document.getElementById('form-checkin');
+    const checkoutInput = document.getElementById('form-checkout');
+    
+    if (checkinInput && !checkinInput.classList.contains('np-ready')) {
+      new NepaliDatePicker(checkinInput);
+      checkinInput.classList.add('np-ready');
+    }
+
+    if (checkoutInput && !checkoutInput.classList.contains('np-ready')) {
+      new NepaliDatePicker(checkoutInput);
+      checkoutInput.classList.add('np-ready');
+    }
+  }
+
+  // Re-initialize when modal is shown
+  const addModal = document.getElementById('addModal');
+  addModal.addEventListener('shown.bs.modal', () => {
+    initNepaliDatePicker();
+  });
+
+  // Optional: init for filters if needed
+  document.addEventListener('DOMContentLoaded', function () {
+    const filterStart = document.getElementById('start-date');
+    const filterEnd = document.getElementById('end-date');
+    if (filterStart) new NepaliDatePicker(filterStart);
+    if (filterEnd) new NepaliDatePicker(filterEnd);
+  });
+</script>
+<script>
+  // Utility to re-init Nepali Datepicker on input fields
+  function initNepaliDatePickers() {
+    const checkin = document.getElementById('form-checkin');
+    const checkout = document.getElementById('form-checkout');
+    
+    // Avoid re-initializing
+    if (!checkin.classList.contains('np-initialized')) {
+      new NepaliDatePicker(checkin);
+      checkin.classList.add('np-initialized');
+    }
+
+    if (!checkout.classList.contains('np-initialized')) {
+      new NepaliDatePicker(checkout);
+      checkout.classList.add('np-initialized');
+    }
+  }
+
+  // When modal is fully shown, init the datepicker
+  const modal = document.getElementById('addModal');
+  modal.addEventListener('shown.bs.modal', function () {
+    initNepaliDatePickers();
+  });
+
+  // Also init filters on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    const filterStart = document.getElementById('start-date');
+    const filterEnd = document.getElementById('end-date');
+    
+    if (filterStart) new NepaliDatePicker(filterStart);
+    if (filterEnd) new NepaliDatePicker(filterEnd);
+  });
+</script>
+
+{% endblock %}

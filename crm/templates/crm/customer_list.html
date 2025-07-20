@@ -1,0 +1,630 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title">Customer List</h4>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#typeSelectModal"
+            >
+              + Add Customer
+            </button>
+          </div>
+
+          {% if messages %} {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %} {% endif %}
+
+          <!-- Search Form -->
+          <form method="get" class="mb-4">
+            <div class="input-group">
+              <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Search customers..."
+                value="{{ request.GET.search }}"
+              />
+              <button class="btn btn-outline-secondary" type="submit">
+                Search
+              </button>
+            </div>
+          </form>
+
+          <!-- Tabs -->
+          <ul class="nav nav-tabs" id="customerTabs" role="tablist">
+            <li class="nav-item">
+              <button
+                class="nav-link active"
+                id="corporate-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#corporate"
+                type="button"
+                role="tab"
+                aria-controls="corporate"
+                aria-selected="true"
+              >
+                Corporate
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                id="ordinary-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#ordinary"
+                type="button"
+                role="tab"
+                aria-controls="ordinary"
+                aria-selected="false"
+              >
+                Ordinary
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                id="organization-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#organization"
+                type="button"
+                role="tab"
+                aria-controls="organization"
+                aria-selected="false"
+              >
+                Organization
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content pt-3" id="customerTabContent">
+            <!-- Corporate -->
+            <div
+              class="tab-pane fade show active"
+              id="corporate"
+              role="tabpanel"
+              aria-labelledby="corporate-tab"
+            >
+              <!-- Corporate Customers -->
+              <h5 class="mt-4">Corporate Customers</h5>
+              <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Company Name</th>
+                      <th>Email</th>
+                      <th>Contact Number</th>
+                      <th>Created At</th>
+                      <th width="100">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for cust in corporate_customers %}
+                    <tr>
+                      <td>{{ cust.company_name }}</td>
+                      <td>{{ cust.email }}</td>
+                      <td>{{ cust.contact_number }}</td>
+                      <td>{{ cust.created_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="dropdown position-relative">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <i class="typcn typcn-th-list"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                              <button
+                                type="button"
+                                class="dropdown-item edit-corporate-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#corporateModal"
+                                data-id="{{ cust.id }}"
+                                data-company_name="{{ cust.company_name }}"
+                                data-company_address="{{ cust.company_address }}"
+                                data-registration_number="{{ cust.registration_number }}"
+                                data-pan_or_vat_number="{{ cust.pan_or_vat_number }}"
+                                data-email="{{ cust.email }}"
+                                data-contact_number="{{ cust.contact_number }}"
+                                data-spokesperson_name="{{ cust.spokesperson_name }}"
+                                data-spokesperson_email="{{ cust.spokesperson_email }}"
+                                data-spokesperson_phone="{{ cust.spokesperson_phone }}"
+                              >
+                                <i class="typcn typcn-edit"></i>Edit
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                type="button"
+                                class="dropdown-item text-danger delete-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-id="{{ cust.id }}"
+                                data-name="{{ cust.company_name }}"
+                                data-type="corporate"
+                              >
+                                <i class="typcn typcn-trash"></i>Delete
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center">
+                        No corporate customers found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Ordinary -->
+            <div
+              class="tab-pane fade"
+              id="ordinary"
+              role="tabpanel"
+              aria-labelledby="ordinary-tab"
+            >
+              <!-- Ordinary Customers -->
+              <h5 class="mt-4">Ordinary Customers</h5>
+              <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Full Name</th>
+                      <th>Email</th>
+                      <th>Phone Number</th>
+                      <th>Created At</th>
+                      <th width="100">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for cust in ordinary_customers %}
+                    <tr>
+                      <td>{{ cust.full_name }}</td>
+                      <td>{{ cust.email }}</td>
+                      <td>{{ cust.phone_number }}</td>
+                      <td>{{ cust.created_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <i class="typcn typcn-th-list"></i>
+                          </button>
+                          <ul class="dropdown-menu">
+                            <li>
+                              <button
+                                type="button"
+                                class="dropdown-item edit-ordinary-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#ordinaryModal"
+                                data-id="{{ cust.id }}"
+                                data-full_name="{{ cust.full_name }}"
+                                data-gender="{{ cust.gender }}"
+                                data-phone_number="{{ cust.phone_number }}"
+                                data-dob="{{ cust.dob }}"
+                                data-email="{{ cust.email }}"
+                                data-nationality="{{ cust.nationality }}"
+                                data-country="{{ cust.country }}"
+                                data-state="{{ cust.state }}"
+                                data-town="{{ cust.town }}"
+                              >
+                                <i class="typcn typcn-edit mx-2"></i>Edit
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                type="button"
+                                class="dropdown-item text-danger delete-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-id="{{ cust.id }}"
+                                data-name="{{ cust.full_name }}"
+                                data-type="ordinary"
+                              >
+                                <i class="typcn typcn-trash mx-2"></i>Delete
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center">
+                        No ordinary customers found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Organization -->
+            <div
+              class="tab-pane fade"
+              id="organization"
+              role="tabpanel"
+              aria-labelledby="organization-tab"
+            >
+              <!-- Organization Customers -->
+              <h5 class="mt-4">Organization Customers</h5>
+              <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Organization Name</th>
+                      <th>Type</th>
+                      <th>Email</th>
+                      <th>Contact Number</th>
+                      <th>Created At</th>
+                      <th width="100">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for cust in organization_customers %}
+                    <tr>
+                      <td>{{ cust.organization_name }}</td>
+                      <td>{{ cust.get_organization_type_display }}</td>
+                      <td>{{ cust.official_email }}</td>
+                      <td>{{ cust.official_contact_number }}</td>
+                      <td>{{ cust.created_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <i class="typcn typcn-th-list mx-2"></i>
+                          </button>
+                          <ul class="dropdown-menu">
+                            <li>
+                              <button
+                                type="button"
+                                class="dropdown-item edit-organization-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#organizationModal"
+                                data-id="{{ cust.id }}"
+                                data-organization_name="{{ cust.organization_name }}"
+                                data-organization_type="{{ cust.organization_type }}"
+                                data-organization_address="{{ cust.organization_address }}"
+                                data-registration_number="{{ cust.registration_number }}"
+                                data-pan_or_tax_exemption_number="{{ cust.pan_or_tax_exemption_number }}"
+                                data-official_email="{{ cust.official_email }}"
+                                data-official_contact_number="{{ cust.official_contact_number }}"
+                                data-representative_name="{{ cust.representative_name }}"
+                                data-representative_email="{{ cust.representative_email }}"
+                                data-representative_phone="{{ cust.representative_phone }}"
+                              >
+                                <i class="typcn typcn-edit mx-2"></i>Edit
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                type="button"
+                                class="dropdown-item text-danger delete-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-id="{{ cust.id }}"
+                                data-name="{{ cust.organization_name }}"
+                                data-type="organization"
+                              >
+                                <i class="typcn typcn-trash mx-2"></i>Delete
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center">
+                        No organization customers found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Type Selector Modal -->
+<div
+  class="modal fade"
+  id="typeSelectModal"
+  tabindex="-1"
+  aria-labelledby="typeSelectModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="typeSelectModalLabel">
+          Select Customer Type
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body text-center">
+        <button
+          type="button"
+          class="btn btn-outline-primary m-2"
+          data-bs-toggle="modal"
+          data-bs-target="#corporateModal"
+          data-bs-dismiss="modal"
+        >
+          Corporate
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-success m-2"
+          data-bs-toggle="modal"
+          data-bs-target="#ordinaryModal"
+          data-bs-dismiss="modal"
+        >
+          Ordinary
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-warning m-2"
+          data-bs-toggle="modal"
+          data-bs-target="#organizationModal"
+          data-bs-dismiss="modal"
+        >
+          Organization
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Corporate Customer Modal -->
+{% include "crm/corporate_customer_form.html" %}
+
+<!-- Ordinary Customer Modal -->
+{% include "crm/ordinary_customer_form.html" %}
+
+<!-- Organization Customer Modal -->
+{% include "crm/organization_customer_form.html" %}
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" id="deleteForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-danger">Delete Customer</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Are you sure you want to delete
+            <strong id="deleteCustomerName"></strong>?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab persistence functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the active tab from URL hash or localStorage
+    const hash = window.location.hash;
+    let activeTab = 'corporate'; // default tab
+    
+    if (hash) {
+      activeTab = hash.substring(1); // remove the # symbol
+    } else {
+      // Check localStorage for last active tab
+      const savedTab = localStorage.getItem('activeCustomerTab');
+      if (savedTab) {
+        activeTab = savedTab;
+      }
+    }
+    
+    // Activate the correct tab
+    activateTab(activeTab);
+    
+    // Listen for tab changes
+    document.querySelectorAll('#customerTabs button[data-bs-toggle="tab"]').forEach(button => {
+      button.addEventListener('shown.bs.tab', function (event) {
+        const tabId = event.target.getAttribute('data-bs-target').substring(1); // remove #
+        localStorage.setItem('activeCustomerTab', tabId);
+        // Update URL hash without triggering page reload
+        history.replaceState(null, null, '#' + tabId);
+      });
+    });
+  });
+
+  function activateTab(tabName) {
+    // Remove active classes from all tabs and content
+    document.querySelectorAll('#customerTabs .nav-link').forEach(tab => {
+      tab.classList.remove('active');
+      tab.setAttribute('aria-selected', 'false');
+    });
+    
+    document.querySelectorAll('#customerTabContent .tab-pane').forEach(pane => {
+      pane.classList.remove('show', 'active');
+    });
+    
+    // Activate the selected tab
+    const targetTab = document.getElementById(tabName + '-tab');
+    const targetPane = document.getElementById(tabName);
+    
+    if (targetTab && targetPane) {
+      targetTab.classList.add('active');
+      targetTab.setAttribute('aria-selected', 'true');
+      targetPane.classList.add('show', 'active');
+    }
+  }
+
+  // Prefill edit modals with data on Edit button click
+
+ // Corporate
+  document.querySelectorAll(".edit-corporate-btn").forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const modal = document.getElementById("corporateModal");
+      modal.querySelector("#corporate-id").value = button.dataset.id;
+      modal.querySelector("#corporate-company-name").value =
+        button.dataset.company_name;
+      modal.querySelector("#corporate-company-address").value =
+        button.dataset.company_address;
+      modal.querySelector("#corporate-registration-number").value =
+        button.dataset.registration_number;
+      modal.querySelector("#corporate-pan-vat-number").value =
+        button.dataset.pan_or_vat_number;
+      modal.querySelector("#corporate-email").value = button.dataset.email;
+      modal.querySelector("#corporate-contact-number").value =
+        button.dataset.contact_number;
+      modal.querySelector("#corporate-spokesperson-name").value =
+        button.dataset.spokesperson_name;
+      modal.querySelector("#corporate-spokesperson-email").value =
+        button.dataset.spokesperson_email;
+      modal.querySelector("#corporate-spokesperson-phone").value =
+        button.dataset.spokesperson_phone;
+      // Clear file input on edit for safety
+      modal.querySelector("#corporate-spokesperson-id-image").value = "";
+      modal.querySelector(".modal-title").innerText = "Edit Corporate Customer";
+      // Change form action to edit URL, e.g. /crm/corporate/edit/<id>/
+      modal.querySelector(
+        "form"
+      ).action = `/crm/corporate/edit/${button.dataset.id}/`;
+    });
+  });
+
+  // Ordinary
+  document.querySelectorAll(".edit-ordinary-btn").forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const modal = document.getElementById("ordinaryModal");
+      modal.querySelector("#ordinary-id").value = button.dataset.id;
+      modal.querySelector("#ordinary-full-name").value =
+        button.dataset.full_name;
+      modal.querySelector("#ordinary-gender").value = button.dataset.gender;
+      modal.querySelector("#ordinary-phone-number").value =
+        button.dataset.phone_number;
+      modal.querySelector("#ordinary-dob").value = button.dataset.dob;
+      modal.querySelector("#ordinary-email").value = button.dataset.email;
+      modal.querySelector("#ordinary-nationality").value =
+        button.dataset.nationality;
+      modal.querySelector("#ordinary-country").value = button.dataset.country;
+      modal.querySelector("#ordinary-state").value = button.dataset.state;
+      modal.querySelector("#ordinary-town").value = button.dataset.town;
+      modal.querySelector("#ordinary-id-image").value = "";
+      modal.querySelector(".modal-title").innerText = "Edit Ordinary Customer";
+      modal.querySelector(
+        "form"
+      ).action = `/crm/ordinary/edit/${button.dataset.id}/`;
+    });
+  });
+
+  // Organization
+  document.querySelectorAll(".edit-organization-btn").forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const modal = document.getElementById("organizationModal");
+      modal.querySelector("#organization-id").value = button.dataset.id;
+      modal.querySelector("#organization-name").value =
+        button.dataset.organization_name;
+      modal.querySelector("#organization-type").value =
+        button.dataset.organization_type;
+      modal.querySelector("#organization-address").value =
+        button.dataset.organization_address;
+      modal.querySelector("#organization-registration-number").value =
+        button.dataset.registration_number;
+      modal.querySelector("#organization-pan-tax").value =
+        button.dataset.pan_or_tax_exemption_number;
+      modal.querySelector("#organization-email").value =
+        button.dataset.official_email;
+      modal.querySelector("#organization-contact-number").value =
+        button.dataset.official_contact_number;
+      modal.querySelector("#organization-rep-name").value =
+        button.dataset.representative_name;
+      modal.querySelector("#organization-rep-email").value =
+        button.dataset.representative_email;
+      modal.querySelector("#organization-rep-phone").value =
+        button.dataset.representative_phone;
+      modal.querySelector("#organization-rep-id-image").value = "";
+      modal.querySelector(".modal-title").innerText =
+        "Edit Organization Customer";
+      modal.querySelector(
+        "form"
+      ).action = `/crm/organization/edit/${button.dataset.id}/`;
+    });
+  });
+
+  // Reset modals on close to blank form + create mode
+  ["corporateModal", "ordinaryModal", "organizationModal"].forEach((id) => {
+    const modal = document.getElementById(id);
+    modal.addEventListener("hidden.bs.modal", function () {
+      this.querySelector("form").reset();
+      this.querySelector("form").action =
+        this.querySelector("form").dataset.createUrl;
+      this.querySelector(".modal-title").innerText =
+        "Add " +
+        this.querySelector(".modal-title").innerText.split(" ")[1] +
+        " Customer";
+    });
+  });
+
+  // Delete modal dynamic setup
+  document.querySelectorAll(".delete-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const customerId = button.dataset.id;
+      const customerName = button.dataset.name;
+      const customerType = button.dataset.type;
+
+      const deleteForm = document.getElementById("deleteForm");
+      const deleteNameElem = document.getElementById("deleteCustomerName");
+
+      deleteNameElem.textContent = customerName;
+      deleteForm.action = `/crm/delete/${customerType}/${customerId}/`;
+    });
+  });
+  </script>
+  {% endblock%}

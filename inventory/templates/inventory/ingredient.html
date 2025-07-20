@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title">Ingredients</h4>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+              + Add Ingredient
+            </button>
+          </div>
+
+          <form method="GET" class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="text" name="search" class="form-control" placeholder="Search by name..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary">Filter</button>
+              <a href="{% url 'ingredients' %}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+          </form>
+
+          <div class="mb-3 d-flex justify-content-end">
+            <a href="?export=csv" class="btn btn-outline-success btn-sm me-2">Export CSV</a>
+            <a href="?export=excel" class="btn btn-outline-info btn-sm me-2">Export Excel</a>
+            <a href="?export=pdf" class="btn btn-outline-danger btn-sm">Export PDF</a>
+          </div>
+
+          <div class="table-responsive">
+            <table id="myTable" class="table table-striped">
+              <thead>
+                <tr><th>Name</th><th>Unit</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {% for row in table_rows %}
+                <tr>
+                  <td>{{ row.0 }}</td>
+                  <td>{{ row.1 }}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-warning edit-btn" data-bs-toggle="modal"
+                            data-bs-target="#addModal"
+                            data-id="{{ row.2 }}"
+                            data-name="{{ row.0 }}"
+                            data-unit="{{ row.1 }}">
+                      Edit
+                    </button>
+                    <form method="POST" action="{% url 'delete_ingredient' row.2 %}" style="display:inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center">No ingredients found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="form-id">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Add Ingredient</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" id="form-name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Unit</label>
+            <input type="text" class="form-control" name="unit" id="form-unit" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    document.getElementById('form-id').value = this.dataset.id;
+    document.getElementById('form-name').value = this.dataset.name;
+    document.getElementById('form-unit').value = this.dataset.unit;
+    document.getElementById('addModalLabel').innerText = 'Edit Ingredient';
+  });
+});
+
+document.querySelector('[data-bs-target="#addModal"]').addEventListener('click', function () {
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-name').value = '';
+  document.getElementById('form-unit').value = '';
+  document.getElementById('addModalLabel').innerText = 'Add Ingredient';
+});
+</script>
+{% endblock %}

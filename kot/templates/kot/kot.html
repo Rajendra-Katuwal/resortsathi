@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="card">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="card-title">Kitchen Order Tickets (KOT)</h4>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal" id="open-add-modal">
+            + Add KOT
+          </button>
+        </div>
+
+        <form method="GET" class="row g-2 mb-3">
+          <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Search by Booking ID..." value="{{ request.GET.search }}">
+          </div>
+          <div class="col-md-8 text-end">
+            <a href="?export=csv" class="btn btn-outline-success btn-sm me-2">Export CSV</a>
+            <a href="?export=excel" class="btn btn-outline-info btn-sm me-2">Export Excel</a>
+            <a href="?export=pdf" class="btn btn-outline-danger btn-sm">Export PDF</a>
+          </div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Booking ID</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for kot in table_rows %}
+              <tr>
+                <td>{{ kot.0 }}</td>
+                <td>{{ kot.1 }}</td>
+                <td>{{ kot.2 }}</td>
+                <td>{{ kot.3 }}</td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-warning edit-btn"
+                          data-bs-toggle="modal" data-bs-target="#addModal"
+                          data-id="{{ kot.0 }}"
+                          data-booking="{{ kot.1 }}"
+                          data-status="{{ kot.2 }}">
+                    Edit
+                  </button>
+                  <form method="POST" action="{% url 'delete_kot' kot.0 %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this KOT?')">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center">No KOTs found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="form-id">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Add KOT</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Booking</label>
+            <select name="booking" id="form-booking" class="form-select" required>
+              <option value="">-- Select Booking --</option>
+              {% for booking in bookings %}
+              <option value="{{ booking.id }}">#{{ booking.id }} - {{ booking.room.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" id="form-status" class="form-select" required>
+              {% for code, label in status_choices %}
+              <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.edit-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    document.getElementById('form-id').value = button.dataset.id;
+    document.getElementById('form-booking').value = button.dataset.booking;
+    document.getElementById('form-status').value = button.dataset.status;
+    document.getElementById('addModalLabel').innerText = 'Edit KOT';
+  });
+});
+
+document.getElementById('open-add-modal').addEventListener('click', () => {
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-booking').value = '';
+  document.getElementById('form-status').value = 'pending';
+  document.getElementById('addModalLabel').innerText = 'Add KOT';
+});
+</script>
+{% endblock %}

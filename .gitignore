@@ -1,0 +1,83 @@
+# ========== Django ==========
+*.log
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+local_settings.py
+db.sqlite3
+*.sqlite3
+
+# Django media/static folders
+media/
+staticfiles/
+
+# If using dotenv
+.env
+.env.*
+
+# ========== Python Virtual Envs ==========
+venv/
+ENV/
+env/
+.venv/
+
+# ========== VS Code ==========
+.vscode/
+
+# ========== PyCharm ==========
+.idea/
+
+# ========== macOS ==========
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# macOS Folder Attributes
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+
+# ========== Windows ==========
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ========== Coverage / Testing ==========
+htmlcov/
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# ========== Celery ==========
+celerybeat-schedule
+
+# ========== Gunicorn ==========
+*.pid
+
+# ========== Build / Packaging ==========
+*.egg-info/
+dist/
+build/
+__pypackages__/
+
+# ========== Migrations (Optional) ==========
+# Comment this out if you keep migrations in version control
+# **/migrations/
+
+# ========== Custom: Duplicates or Temp ==========
+*/dublicate_templates
+
+# .gitignore

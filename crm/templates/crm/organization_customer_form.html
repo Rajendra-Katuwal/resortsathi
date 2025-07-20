@@ -1,0 +1,148 @@
+<div class="modal fade" id="organizationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form
+        method="POST"
+        id="organizationForm"
+        enctype="multipart/form-data"
+        action="{% url 'crm:organization_add' %}"
+      >
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Organization Customer</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body row g-3">
+          <input type="hidden" name="id" id="organization-id" />
+          <input
+            type="hidden"
+            name="customer_type"
+            id="organization-customer-type"
+            value="organization"
+            readonly
+          />
+          <div class="col-md-6">
+            <label class="form-label">Organization Name</label
+            ><input
+              type="text"
+              class="form-control"
+              name="organization_name"
+              id="organization-name"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Organization Type</label>
+            <select
+              name="organization_type"
+              id="organization-type"
+              class="form-select"
+            >
+              <option value="ngo">NGO</option>
+              <option value="npo">NPO</option>
+              <option value="charity">Charity</option>
+              <option value="social_enterprise">Social Enterprise</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Address</label
+            ><input
+              type="text"
+              class="form-control"
+              name="organization_address"
+              id="organization-address"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Registration Number</label
+            ><input
+              type="text"
+              class="form-control"
+              name="registration_number"
+              id="organization-registration-number"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">PAN/Tax Exempt Number</label
+            ><input
+              type="text"
+              class="form-control"
+              name="pan_or_tax_exemption_number"
+              id="organization-pan-tax"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Official Email</label
+            ><input
+              type="email"
+              class="form-control"
+              name="official_email"
+              id="organization-email"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Official Contact Number</label
+            ><input
+              type="text"
+              class="form-control"
+              name="official_contact_number"
+              id="organization-contact-number"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Representative Name</label
+            ><input
+              type="text"
+              class="form-control"
+              name="representative_name"
+              id="organization-rep-name"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Representative Email</label
+            ><input
+              type="email"
+              class="form-control"
+              name="representative_email"
+              id="organization-rep-email"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Representative Phone</label
+            ><input
+              type="text"
+              class="form-control"
+              name="representative_phone"
+              id="organization-rep-phone"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Representative ID (Image)</label
+            ><input
+              type="file"
+              class="form-control"
+              name="representative_id_image"
+              id="organization-rep-id-image"
+            />
+          </div>
+        </div>
+        <div class="modal-footer mt-3">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-warning">
+            Save Organization
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
